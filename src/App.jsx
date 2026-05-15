@@ -7,18 +7,10 @@ const PASSWORD = "7332thalia";
 const CATEGORIAS = ["Desayuno", "Entrante", "Principal", "Postre", "Snack", "Bebida", "Monsieur Cuisine", "Otro"];
 
 const T = {
-  bg: "#faf7f0",
-  surface: "#fff",
-  card: "#f3ede0",
-  olive: "#4a5c2f",
-  oliveLight: "#e8f0d8",
-  oliveMid: "#3a4a22",
-  gold: "#c9a96e",
-  goldLight: "#f5ead0",
-  goldDark: "#7a5c20",
-  text: "#2d2416",
-  muted: "#5a5240",
-  border: "#e0d8c8",
+  bg: "#faf7f0", surface: "#fff", card: "#f3ede0",
+  olive: "#4a5c2f", oliveLight: "#e8f0d8", oliveMid: "#3a4a22",
+  gold: "#c9a96e", goldLight: "#f5ead0", goldDark: "#7a5c20",
+  text: "#2d2416", muted: "#5a5240", border: "#e0d8c8",
   ff: { title: "Georgia, 'Times New Roman', serif", body: "system-ui, -apple-system, sans-serif" },
 };
 
@@ -33,19 +25,17 @@ const s = {
   tagOlive: { background: T.oliveLight, color: T.oliveMid, borderRadius: 20, padding: "2px 10px", fontSize: 12, fontWeight: 600 },
   tagGold: { background: T.goldLight, color: T.goldDark, borderRadius: 20, padding: "2px 10px", fontSize: 12, fontWeight: 600 },
   input: { width: "100%", border: `1px solid ${T.border}`, borderRadius: 8, padding: "8px 10px", fontSize: 14, boxSizing: "border-box", background: "#fdfaf4", fontFamily: T.ff.body, color: T.text },
-  label: { fontSize: 13, fontWeight: 600, color: T.muted, marginBottom: 4, display: "block", fontFamily: T.ff.body },
+  label: { fontSize: 13, fontWeight: 600, color: T.muted, marginBottom: 4, display: "block" },
   section: { marginBottom: 20 },
   counter: { display: "flex", alignItems: "center", gap: 10 },
   counterBtn: { width: 32, height: 32, borderRadius: "50%", border: `1px solid ${T.olive}`, background: "transparent", color: T.olive, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" },
   paso: { background: T.surface, borderRadius: 12, padding: 28, textAlign: "center", border: `1px solid ${T.border}`, minHeight: 140, display: "flex", flexDirection: "column", justifyContent: "center" },
-  divider: { borderBottom: `1px solid ${T.border}`, margin: "0 0 12px" },
 };
 
 const emptyReceta = () => ({ id: Date.now(), nombre: "", categoria: "Principal", tiempo: "", porciones_base: 2, ingredientes: [{ nombre: "", cantidad: "", unidad: "" }], pasos: [""], notas: "" });
 
 function scale(val, base, cur) {
-  const n = parseFloat(val);
-  const b = parseFloat(base);
+  const n = parseFloat(val), b = parseFloat(base);
   if (isNaN(n) || isNaN(b) || b === 0) return val;
   const r = (n * cur) / b;
   return Number.isInteger(r) ? String(r) : r.toFixed(1).replace(/\.0$/, "");
@@ -54,38 +44,7 @@ function scale(val, base, cur) {
 export default function App() {
   const [auth, setAuth] = useState(() => localStorage.getItem(AUTH_KEY) === "1");
   const [loginForm, setLoginForm] = useState({ user: "", pass: "", error: false });
-
-  const login = () => {
-    if (loginForm.user === USUARIO && loginForm.pass === PASSWORD) {
-      localStorage.setItem(AUTH_KEY, "1");
-      setAuth(true);
-    } else {
-      setLoginForm(f => ({ ...f, error: true }));
-    }
-  };
-
-  if (!auth) return (
-    <div style={{ ...s.app, display: "flex", flexDirection: "column", justifyContent: "center", minHeight: "100vh", paddingBottom: 60 }}>
-      <div style={{ textAlign: "center", marginBottom: 32 }}>
-        <span style={{ fontSize: 48 }}>🌿</span>
-        <h1 style={{ ...s.h1, fontSize: 28, marginTop: 8 }}>Mi Recetario</h1>
-      </div>
-      <div style={{ background: "#fff", borderRadius: 16, padding: 28, border: `1px solid ${T.border}` }}>
-        <div style={s.section}>
-          <label style={s.label}>Usuario</label>
-          <input style={s.input} value={loginForm.user} onChange={e => setLoginForm(f => ({ ...f, user: e.target.value, error: false }))} placeholder="Usuario" autoCapitalize="none" />
-        </div>
-        <div style={s.section}>
-          <label style={s.label}>Contraseña</label>
-          <input style={s.input} type="password" value={loginForm.pass} onChange={e => setLoginForm(f => ({ ...f, pass: e.target.value, error: false }))} placeholder="Contraseña" onKeyDown={e => e.key === "Enter" && login()} />
-        </div>
-        {loginForm.error && <p style={{ color: "#b04040", fontSize: 13, margin: "-8px 0 12px", textAlign: "center" }}>Usuario o contraseña incorrectos.</p>}
-        <button style={{ ...s.btn, width: "100%", padding: 14, fontSize: 16 }} onClick={login}>Entrar</button>
-      </div>
-    </div>
-  );
-
-  const logout = () => { localStorage.removeItem(AUTH_KEY); setAuth(false); };
+  const [recetas, setRecetas] = useState([]);
   const [vista, setVista] = useState("lista");
   const [selected, setSelected] = useState(null);
   const [form, setForm] = useState(null);
@@ -103,10 +62,10 @@ export default function App() {
   }, []);
 
   const saveR = (rs) => { setRecetas(rs); try { localStorage.setItem(STORAGE_KEY, JSON.stringify(rs)); } catch {} };
+  const logout = () => { localStorage.removeItem(AUTH_KEY); setAuth(false); };
   const abrirDetalle = (r) => { setSelected(r); setPorciones(r.porciones_base); setVista("detalle"); };
   const abrirCocinar = () => { setPasoActual(0); setVista("cocinar"); };
   const abrirForm = (r = null) => { setForm(r ? { ...r, ingredientes: r.ingredientes.map(i => ({ ...i })), pasos: [...r.pasos] } : emptyReceta()); setVistaImport(false); setVista("form"); };
-
   const guardarForm = () => {
     if (!form.nombre.trim()) return alert("Ponle un nombre a la receta.");
     const upd = form.id && recetas.find(r => r.id === form.id) ? recetas.map(r => r.id === form.id ? form : r) : [...recetas, { ...form, id: Date.now() }];
@@ -125,17 +84,19 @@ export default function App() {
     if (!textoReceta.trim()) return;
     setParsando(true);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch("/.netlify/functions/claude", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514", max_tokens: 1000,
-          messages: [{ role: "user", content: `Extrae la información de esta receta y devuelve SOLO un JSON válido, sin texto adicional ni backticks, con esta estructura exacta:\n{"nombre":"string","categoria":"uno de: Desayuno, Entrante, Principal, Postre, Snack, Bebida, Otro","tiempo":"número en minutos o cadena vacía","porciones_base":número,"ingredientes":[{"nombre":"string","cantidad":"string numérica","unidad":"string"}],"pasos":["string"],"notas":"string"}\n\nReceta:\n${textoReceta}` }]
+          model: "claude-sonnet-4-5",
+          max_tokens: 1000,
+          messages: [{ role: "user", content: `Extrae la información de esta receta y devuelve SOLO un JSON válido, sin texto adicional ni backticks, con esta estructura exacta:\n{"nombre":"string","categoria":"uno de: Desayuno, Entrante, Principal, Postre, Snack, Bebida, Monsieur Cuisine, Otro","tiempo":"número en minutos o cadena vacía","porciones_base":número,"ingredientes":[{"nombre":"string","cantidad":"string numérica","unidad":"string"}],"pasos":["string"],"notas":"string"}\n\nReceta:\n${textoReceta}` }]
         })
       });
       const data = await res.json();
       const text = data.content.map(b => b.text || "").join("");
-      const parsed = JSON.parse(text.trim());
+      const clean = text.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(clean);
       setForm({ ...emptyReceta(), ...parsed, id: Date.now() });
       setVistaImport(false); setVista("form");
     } catch { alert("No se pudo interpretar la receta. Prueba con un texto más completo."); }
@@ -144,7 +105,33 @@ export default function App() {
 
   const filtradas = recetas.filter(r => (filtrocat === "Todas" || r.categoria === filtrocat) && r.nombre.toLowerCase().includes(busqueda.toLowerCase()));
 
-  // CONFIRMACIÓN BORRAR
+  // LOGIN
+  if (!auth) return (
+    <div style={{ ...s.app, display: "flex", flexDirection: "column", justifyContent: "center", minHeight: "100vh", paddingBottom: 60 }}>
+      <div style={{ textAlign: "center", marginBottom: 32 }}>
+        <span style={{ fontSize: 48 }}>🌿</span>
+        <h1 style={{ ...s.h1, fontSize: 28, marginTop: 8 }}>Mi Recetario</h1>
+      </div>
+      <div style={{ background: T.surface, borderRadius: 16, padding: 28, border: `1px solid ${T.border}` }}>
+        <div style={s.section}>
+          <label style={s.label}>Usuario</label>
+          <input style={s.input} value={loginForm.user} onChange={e => setLoginForm(f => ({ ...f, user: e.target.value, error: false }))} placeholder="Usuario" autoCapitalize="none" />
+        </div>
+        <div style={s.section}>
+          <label style={s.label}>Contraseña</label>
+          <input style={s.input} type="password" value={loginForm.pass} onChange={e => setLoginForm(f => ({ ...f, pass: e.target.value, error: false }))} placeholder="Contraseña"
+            onKeyDown={e => e.key === "Enter" && (loginForm.user === USUARIO && loginForm.pass === PASSWORD ? (localStorage.setItem(AUTH_KEY, "1"), setAuth(true)) : setLoginForm(f => ({ ...f, error: true })))} />
+        </div>
+        {loginForm.error && <p style={{ color: "#b04040", fontSize: 13, margin: "-8px 0 12px", textAlign: "center" }}>Usuario o contraseña incorrectos.</p>}
+        <button style={{ ...s.btn, width: "100%", padding: 14, fontSize: 16 }} onClick={() => {
+          if (loginForm.user === USUARIO && loginForm.pass === PASSWORD) { localStorage.setItem(AUTH_KEY, "1"); setAuth(true); }
+          else setLoginForm(f => ({ ...f, error: true }));
+        }}>Entrar</button>
+      </div>
+    </div>
+  );
+
+  // CONFIRMAR BORRAR
   if (confirmDelete) return (
     <div style={s.app}>
       <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 14, padding: 28, textAlign: "center", marginTop: 60 }}>
@@ -207,7 +194,6 @@ export default function App() {
             <button style={s.btnGhost} onClick={() => eliminar(r.id)}>🗑</button>
           </div>
         </div>
-
         <div style={{ ...s.section, background: T.oliveLight, borderRadius: 12, padding: "12px 16px" }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: T.oliveMid, marginBottom: 8 }}>Ajustar porciones</div>
           <div style={s.counter}>
@@ -217,7 +203,6 @@ export default function App() {
             <span style={{ fontSize: 13, color: T.muted }}>comensales (base: {r.porciones_base})</span>
           </div>
         </div>
-
         <div style={s.section}>
           <h3 style={{ fontFamily: T.ff.title, fontSize: 16, color: T.olive, marginBottom: 10, fontWeight: 700 }}>Ingredientes</h3>
           {r.ingredientes.filter(i => i.nombre).map((ing, idx) => (
@@ -227,7 +212,6 @@ export default function App() {
             </div>
           ))}
         </div>
-
         <div style={s.section}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <h3 style={{ fontFamily: T.ff.title, fontSize: 16, color: T.olive, margin: 0, fontWeight: 700 }}>Preparación</h3>
@@ -240,7 +224,6 @@ export default function App() {
             </div>
           ))}
         </div>
-
         {r.notas && (
           <div style={{ background: T.goldLight, border: `1px solid ${T.gold}`, borderRadius: 12, padding: 14 }}>
             <div style={{ fontFamily: T.ff.title, fontSize: 14, fontWeight: 700, color: T.goldDark, marginBottom: 6 }}>📝 Notas</div>
@@ -259,7 +242,6 @@ export default function App() {
           <button style={s.btnGhost} onClick={() => setVista(selected ? "detalle" : "lista")}>← Cancelar</button>
           <span style={{ fontFamily: T.ff.title, fontWeight: 700, fontSize: 17, color: T.text }}>{form.id && recetas.find(r => r.id === form.id) ? "Editar receta" : "Nueva receta"}</span>
         </div>
-
         <div style={s.section}>
           <label style={s.label}>Nombre</label>
           <input style={s.input} value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} placeholder="Ej: Tortilla de patatas" />
@@ -276,7 +258,6 @@ export default function App() {
             <input style={s.input} value={form.tiempo} onChange={e => setForm({ ...form, tiempo: e.target.value })} placeholder="30" type="number" />
           </div>
         </div>
-
         <div style={s.section}>
           <label style={s.label}>Porciones base</label>
           <div style={s.counter}>
@@ -286,7 +267,6 @@ export default function App() {
             <span style={{ fontSize: 13, color: T.muted }}>comensales</span>
           </div>
         </div>
-
         <div style={s.section}>
           <label style={s.label}>Ingredientes</label>
           {form.ingredientes.map((ing, i) => (
@@ -299,7 +279,6 @@ export default function App() {
           ))}
           <button style={s.btnSec} onClick={addIng}>+ Ingrediente</button>
         </div>
-
         <div style={s.section}>
           <label style={s.label}>Pasos</label>
           {form.pasos.map((p, i) => (
@@ -311,12 +290,10 @@ export default function App() {
           ))}
           <button style={s.btnSec} onClick={addPaso}>+ Paso</button>
         </div>
-
         <div style={s.section}>
           <label style={s.label}>Notas y trucos</label>
           <textarea style={{ ...s.input, minHeight: 80, resize: "vertical" }} value={form.notas} onChange={e => setForm({ ...form, notas: e.target.value })} placeholder="Trucos, variaciones, errores a evitar..." />
         </div>
-
         <button style={{ ...s.btn, width: "100%", padding: 14, fontSize: 16 }} onClick={guardarForm}>Guardar receta</button>
       </div>
     );
@@ -329,7 +306,7 @@ export default function App() {
         <button style={s.btnGhost} onClick={() => setVistaImport(false)}>← Cancelar</button>
         <span style={{ fontFamily: T.ff.title, fontWeight: 700, fontSize: 17, color: T.text }}>Pegar receta</span>
       </div>
-      <p style={{ fontSize: 14, color: T.muted, marginBottom: 12 }}>Pega el texto de la receta tal como lo tienes (de una web, un libro, un mensaje...) y la app detectará los ingredientes, pasos y demás automáticamente.</p>
+      <p style={{ fontSize: 14, color: T.muted, marginBottom: 12 }}>Pega el texto de la receta tal como lo tienes y la app detectará los ingredientes, pasos y demás automáticamente.</p>
       <textarea style={{ ...s.input, minHeight: 220, resize: "vertical", marginBottom: 16 }} placeholder="Pega aquí el texto de la receta..." value={textoReceta} onChange={e => setTextoReceta(e.target.value)} />
       <button style={{ ...s.btn, width: "100%", padding: 14, fontSize: 16, opacity: parsando ? 0.7 : 1 }} onClick={parsarReceta} disabled={parsando}>
         {parsando ? "Analizando receta..." : "✨ Rellenar automáticamente"}
@@ -344,19 +321,17 @@ export default function App() {
         <span style={{ fontSize: 26 }}>🌿</span>
         <h1 style={s.h1}>Mi Recetario</h1>
         <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
+          <button style={s.btnGhost} onClick={logout}>Salir</button>
           <button style={s.btnSec} onClick={() => { setTextoReceta(""); setVistaImport(true); }}>📋 Pegar</button>
           <button style={s.btn} onClick={() => abrirForm()}>+ Nueva</button>
         </div>
       </div>
-
       <input style={{ ...s.input, marginBottom: 12 }} placeholder="Buscar receta..." value={busqueda} onChange={e => setBusqueda(e.target.value)} />
-
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
         {["Todas", ...CATEGORIAS].map(c => (
           <button key={c} onClick={() => setFiltrocat(c)} style={{ fontFamily: T.ff.body, background: filtrocat === c ? T.olive : T.oliveLight, color: filtrocat === c ? "#fff" : T.oliveMid, border: "none", borderRadius: 20, padding: "5px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>{c}</button>
         ))}
       </div>
-
       {filtradas.length === 0
         ? <div style={{ textAlign: "center", color: T.muted, padding: 40, fontFamily: T.ff.title, fontSize: 15 }}>
             {recetas.length === 0 ? "Aún no tienes recetas. ¡Añade la primera!" : "No hay resultados."}
