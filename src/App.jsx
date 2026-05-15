@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 
 const STORAGE_KEY = "recetario_v1";
+const AUTH_KEY = "recetario_auth";
+const USUARIO = "thalia";
+const PASSWORD = "7332thalia";
 const CATEGORIAS = ["Desayuno", "Entrante", "Principal", "Postre", "Snack", "Bebida", "Monsieur Cuisine", "Otro"];
 
 const T = {
@@ -49,7 +52,40 @@ function scale(val, base, cur) {
 }
 
 export default function App() {
-  const [recetas, setRecetas] = useState([]);
+  const [auth, setAuth] = useState(() => localStorage.getItem(AUTH_KEY) === "1");
+  const [loginForm, setLoginForm] = useState({ user: "", pass: "", error: false });
+
+  const login = () => {
+    if (loginForm.user === USUARIO && loginForm.pass === PASSWORD) {
+      localStorage.setItem(AUTH_KEY, "1");
+      setAuth(true);
+    } else {
+      setLoginForm(f => ({ ...f, error: true }));
+    }
+  };
+
+  if (!auth) return (
+    <div style={{ ...s.app, display: "flex", flexDirection: "column", justifyContent: "center", minHeight: "100vh", paddingBottom: 60 }}>
+      <div style={{ textAlign: "center", marginBottom: 32 }}>
+        <span style={{ fontSize: 48 }}>🌿</span>
+        <h1 style={{ ...s.h1, fontSize: 28, marginTop: 8 }}>Mi Recetario</h1>
+      </div>
+      <div style={{ background: "#fff", borderRadius: 16, padding: 28, border: `1px solid ${T.border}` }}>
+        <div style={s.section}>
+          <label style={s.label}>Usuario</label>
+          <input style={s.input} value={loginForm.user} onChange={e => setLoginForm(f => ({ ...f, user: e.target.value, error: false }))} placeholder="Usuario" autoCapitalize="none" />
+        </div>
+        <div style={s.section}>
+          <label style={s.label}>Contraseña</label>
+          <input style={s.input} type="password" value={loginForm.pass} onChange={e => setLoginForm(f => ({ ...f, pass: e.target.value, error: false }))} placeholder="Contraseña" onKeyDown={e => e.key === "Enter" && login()} />
+        </div>
+        {loginForm.error && <p style={{ color: "#b04040", fontSize: 13, margin: "-8px 0 12px", textAlign: "center" }}>Usuario o contraseña incorrectos.</p>}
+        <button style={{ ...s.btn, width: "100%", padding: 14, fontSize: 16 }} onClick={login}>Entrar</button>
+      </div>
+    </div>
+  );
+
+  const logout = () => { localStorage.removeItem(AUTH_KEY); setAuth(false); };
   const [vista, setVista] = useState("lista");
   const [selected, setSelected] = useState(null);
   const [form, setForm] = useState(null);
