@@ -15,6 +15,7 @@ export async function handler(event) {
     });
 
     const data = await res.json();
+    console.log("Respuesta Anthropic:", JSON.stringify(data));
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
