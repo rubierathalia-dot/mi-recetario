@@ -98,7 +98,8 @@ export default function App() {
       });
       const data = await res.json();
       const text = data.content.map(b => b.text || "").join("");
-      const parsed = JSON.parse(text.trim());
+      const clean = text.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(clean);
       setForm({ ...emptyReceta(), ...parsed, id: Date.now() });
       setVistaImport(false); setVista("form");
     } catch { alert("No se pudo interpretar la receta. Prueba con un texto más completo."); }
