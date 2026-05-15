@@ -92,7 +92,7 @@ export default function App() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514", max_tokens: 1000,
+          model: "claude-sonnet-4-5", max_tokens: 1000,
           messages: [{ role: "user", content: `Extrae la información de esta receta y devuelve SOLO un JSON válido, sin texto adicional ni backticks, con esta estructura exacta:\n{"nombre":"string","categoria":"uno de: Desayuno, Entrante, Principal, Postre, Snack, Bebida, Otro","tiempo":"número en minutos o cadena vacía","porciones_base":número,"ingredientes":[{"nombre":"string","cantidad":"string numérica","unidad":"string"}],"pasos":["string"],"notas":"string"}\n\nReceta:\n${textoReceta}` }]
         })
       });
