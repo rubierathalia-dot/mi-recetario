@@ -42,8 +42,9 @@ const emptyReceta = () => ({ id: Date.now(), nombre: "", categoria: "Principal",
 
 function scale(val, base, cur) {
   const n = parseFloat(val);
-  if (isNaN(n)) return val;
-  const r = (n * cur) / base;
+  const b = parseFloat(base);
+  if (isNaN(n) || isNaN(b) || b === 0) return val;
+  const r = (n * cur) / b;
   return Number.isInteger(r) ? String(r) : r.toFixed(1).replace(/\.0$/, "");
 }
 
@@ -88,18 +89,17 @@ export default function App() {
     if (!textoReceta.trim()) return;
     setParsando(true);
     try {
-      const res = await fetch("/.netlify/functions/claude", {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-5", max_tokens: 1000,
+          model: "claude-sonnet-4-20250514", max_tokens: 1000,
           messages: [{ role: "user", content: `Extrae la información de esta receta y devuelve SOLO un JSON válido, sin texto adicional ni backticks, con esta estructura exacta:\n{"nombre":"string","categoria":"uno de: Desayuno, Entrante, Principal, Postre, Snack, Bebida, Otro","tiempo":"número en minutos o cadena vacía","porciones_base":número,"ingredientes":[{"nombre":"string","cantidad":"string numérica","unidad":"string"}],"pasos":["string"],"notas":"string"}\n\nReceta:\n${textoReceta}` }]
         })
       });
       const data = await res.json();
       const text = data.content.map(b => b.text || "").join("");
-      const clean = text.replace(/```json|```/g, "").trim();
-      const parsed = JSON.parse(clean);
+      const parsed = JSON.parse(text.trim());
       setForm({ ...emptyReceta(), ...parsed, id: Date.now() });
       setVistaImport(false); setVista("form");
     } catch { alert("No se pudo interpretar la receta. Prueba con un texto más completo."); }
